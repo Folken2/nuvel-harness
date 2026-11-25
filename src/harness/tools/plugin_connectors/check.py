@@ -29,7 +29,7 @@ from ..user_tools.mcp_toolsets import build_mcp_toolset, close_within
 from ..user_tools.unavailable import UnavailableTools
 from .answer_cache import AnswerCache
 from .attach import AttachFailed, attach, some_names_unusable
-from .missing import NOT_LOADED, Missing
+from .missing import NOT_LOADED
 from .mounts import Mount, connectors_of
 
 logger = logging.getLogger(__name__)

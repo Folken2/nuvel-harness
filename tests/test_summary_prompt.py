@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-from typing import Any, AsyncGenerator, ClassVar, Optional
+from typing import AsyncGenerator, ClassVar
 
 from google.adk.agents import LlmAgent
 from google.adk.apps import App
