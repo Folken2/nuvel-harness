@@ -26,12 +26,14 @@ def _offered(monkeypatch, listed: list[McpTool]) -> list[str]:
     async def listing(self, readonly_context=None):
         return listed
 
-    monkeypatch.setattr(McpToolset, "get_tools_with_prefix", listing)
+    # Stands in for the server's tools/list.
+    monkeypatch.setattr(McpToolset, "get_tools", listing)
     toolset = build_mcp_toolset(
         {"slug": "crm", "url": "https://crm.example.test/mcp"}, UnavailableTools(),
         McpLimits(attach_timeout_seconds=5, call_timeout_seconds=30, tool_list_ttl_seconds=60, cache_limit=4),
     )
-    return [tool.name for tool in asyncio.run(toolset.get_tools_with_prefix())]
+    offered = asyncio.run(toolset.get_tools_with_prefix())
+    return [tool.name.removeprefix(f"{toolset.tool_name_prefix}_") for tool in offered]
 
 
 def test_a_tool_for_the_page_only_is_left_out_and_every_other_tool_stays(monkeypatch):

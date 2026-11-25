@@ -59,7 +59,9 @@ The test suite enforces the first three:
 - **Every module imports first, alone, in a fresh process.** An eager re-export can't close an
   import cycle that only one import order would hit.
 - **No environment reads** anywhere in the package.
-- **ADK through its public modules only**, so an ADK upgrade stays a version bump.
+- **ADK through the hooks it gives subclasses**, never a patch, so an ADK upgrade stays a
+  version bump. The two places that rely on ADK's internals are pinned by tests. Where the
+  harness ships its own piece beside an ADK built-in, and why, is in [docs/adk.md](docs/adk.md).
 - **Plugin order is behaviour.** A plugin that returns a value from a callback replaces what
   runs next, so which plugins may return one, and which pairs must run in order, is a
   deliberate list; every other plugin returns nothing and can stand anywhere.
