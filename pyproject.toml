@@ -26,7 +26,7 @@ dependencies = [
     "google-genai>=2.33,<3",
     # Never 1.82.7, 1.82.8 or 1.107.0: compromised releases. The floor is above them.
     "litellm>=1.108.3,<2",
-    "mcp>=1.27,<2",
+    "mcp>=1.27,<3",
     "fastapi>=0.141",
     "starlette>=1.10,<2",
     "pydantic>=2.12,<3",
