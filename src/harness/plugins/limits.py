@@ -1,4 +1,4 @@
-"""The safety ceiling, as ADK callbacks (limits.md LM-29 to LM-32).
+"""The safety ceiling, as ADK callbacks.
 
 The budget and the rule are ``runs/ceiling.py``. This plugin only counts: each model
 call and tool call is a step, each call's cost is added, and before each model call it
@@ -11,7 +11,7 @@ an error, so ADK ends the run as it ends any finished one.
 
 Only the ceiling lives here. Request, month cost and concurrency limits are the web
 app's start gate: nothing in this plugin reads them, so a run that has started always
-finishes (LM-20, T-29).
+finishes.
 """
 
 from __future__ import annotations

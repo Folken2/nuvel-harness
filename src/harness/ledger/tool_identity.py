@@ -1,10 +1,10 @@
 """Who a tool call belongs to: its normalised name, source, namespace and sku. Pure.
 
-usage-and-analytics.md section 2, "Tool identity". The person's apps reach the
-agent as MCP tools named ``mcp_<server>__<tool>``; a server the product registered
-as its connected-app server (``registry.py``) is one of them, so its tools count as
-connected apps, not MCP. Everything else the agent defines is the product's own
-(``internal``), under the feature the product registered for it.
+The person's apps reach the agent as MCP tools named ``mcp_<server>__<tool>``; a
+server the product registered as its connected-app server (``registry.py``) is one
+of them, so its tools count as connected apps, not MCP. Everything else the agent
+defines is the product's own (``internal``), under the feature the product
+registered for it.
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ MCP = "mcp"
 INTERNAL = "internal"
 UNKNOWN = "unknown"
 
-# A connected-app server's own tools all count under one toolkit (section 2).
+# A connected-app server's own tools all count under one toolkit.
 TOOL_ROUTER = "tool_router"
 
 _ALIASES = {
@@ -32,7 +32,7 @@ _ALIASES = {
     "run_javascript": "code_interpreter",
 }
 
-# Features of section 2 a tool is by its normalised name, whoever defines it. A product's
+# The feature a tool belongs to by its normalised name, whoever defines it. A product's
 # own tools get theirs from the registry; the rest are "tool".
 _FEATURES = {
     "web_search": "web_search",
@@ -135,7 +135,7 @@ def _toolkit_of(tool: str) -> str:
 
 
 def hosted_web_search(engine: str = "native") -> ToolIdentity:
-    """A web search the model provider ran inside a model call (UG-25)."""
+    """A web search the model provider ran inside a model call."""
     return ToolIdentity(
         name="web_search",
         source=PROVIDER_NATIVE,

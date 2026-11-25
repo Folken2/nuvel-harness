@@ -1,4 +1,4 @@
-"""What of a provider's raw usage the ledger may keep (usage-and-analytics.md UG-9).
+"""What of a provider's raw usage the ledger may keep.
 
 The ledger never stores prompts, replies, headers or credentials. A provider's
 usage object can carry any of those next to its counters, so only numeric
@@ -79,7 +79,7 @@ def _clean(value: object, depth: int, budget: _Budget) -> Optional[object]:
 
 
 def sanitise_provider_usage(raw: object) -> dict[str, Any]:
-    """Only the counters and labels UG-9 allows; ``{}`` when nothing is left."""
+    """Only the billing counters and labels the ledger may keep; ``{}`` when none are left."""
     if not isinstance(raw, dict):
         return {}
     cleaned = _clean(raw, 0, _Budget())

@@ -1,10 +1,10 @@
-"""A provider call a tool makes itself, as one ledger operation (UG-1).
+"""A provider call a tool makes itself, as one ledger operation.
 
 The turn's model calls reach a provider through the LiteLLM client, which opens their
 operation (``ledger/client.py``). A built-in ability calls an endpoint that client can't
 (an image, a completion with a server tool), so its tool opens the operation here and
 settles it with ``meter.finish``, or ``meter.attempt_failed`` when the call fails. The
-operation is keyed by the tool call, so a replay writes the same row (UG-3).
+operation is keyed by the tool call, so a replay writes the same row.
 """
 
 from __future__ import annotations

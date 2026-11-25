@@ -1,9 +1,8 @@
 """One model call's token counts, put into the ledger's buckets.
 
 Providers disagree on whether input includes cached tokens and whether output
-includes reasoning. ``normalise`` turns what one reported into the buckets of
-usage-and-analytics.md section 2 ("Token buckets") and UG-17, so pricing and
-reports never have to know which provider it was.
+includes reasoning. ``normalise`` turns what one reported into the ledger's token
+buckets, so pricing and reports never have to know which provider it was.
 """
 
 from __future__ import annotations
@@ -36,7 +35,7 @@ class TokenUsage:
     input_audio: int = 0
     output_image: int = 0
     output_audio: int = 0
-    # The figures cover only part of the run (UG-17), so the entry is flagged.
+    # The figures cover only part of the run, so the entry is flagged.
     incomplete: bool = False
 
 
@@ -67,7 +66,7 @@ def normalise(
     output_audio: object = 0,
     incomplete: bool = False,
 ) -> TokenUsage:
-    """The buckets for what a provider reported (UG-17).
+    """The buckets for what a provider reported.
 
     ``input_includes_cache`` says whether ``input_tokens`` already counts the
     cache read and write tokens; ``output_includes_reasoning`` whether
@@ -116,7 +115,7 @@ def normalise(
 
 
 def summed(calls: list[TokenUsage]) -> Optional[TokenUsage]:
-    """Every step of a multi-step call added together (UG-17); None for no steps."""
+    """Every step of a multi-step call added together; None for no steps."""
     if not calls:
         return None
     fields = [f for f in TokenUsage.__dataclass_fields__ if f != "incomplete"]

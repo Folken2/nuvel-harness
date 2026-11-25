@@ -1,4 +1,4 @@
-"""The overage rule on its own (limits.md LM-22)."""
+"""The overage rule on its own."""
 
 from decimal import Decimal as D
 

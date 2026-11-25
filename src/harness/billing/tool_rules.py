@@ -1,4 +1,4 @@
-"""Tool price rules: what one tool call costs (usage-and-analytics.md UG-26). Pure.
+"""Tool price rules: what one tool call costs. Pure.
 
 A rule meters a sku for a billing subject (the person, or the platform) over a
 daily or monthly period. A call's cost is the increase in the subject's bill it
@@ -56,7 +56,7 @@ class ToolRule:
 @dataclass(frozen=True)
 class ToolCharge:
     cost_usd: Decimal
-    # Section 2, "settlement": the formula and the units before and after.
+    # Settlement: the formula and the units before and after.
     settlement: dict[str, Any]
 
 
@@ -116,7 +116,7 @@ def router_web_search_sku(engine: str) -> str:
 
 
 # A search on a model with no listed price, when the catalogue lists none at all:
-# high, so an unpriced search can't run unbounded (UG-20, as FallbackRates does for tokens).
+# high, so an unpriced search can't run unbounded, as FallbackRates does for tokens.
 DEFAULT_WEB_SEARCH_FALLBACK_USD = Decimal("0.05")
 
 

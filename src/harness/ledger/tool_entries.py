@@ -1,10 +1,9 @@
 """What one tool operation's row holds, and what the tool cost. Pure: no I/O.
 
-usage-and-analytics.md UG-25 to UG-27. A tool with no price rule costs 0, source
-``free`` (UG-27). Hosted web search is the one tool with a rule today: when the
-model call it ran in reported a cost covering the whole request, the search is
-already inside that cost, so the tool stores 0 and says how much was included
-(UG-25). Otherwise the rule prices it.
+A tool with no price rule costs 0, source ``free``. Hosted web search is the
+one tool with a rule today: when the model call it ran in reported a cost
+covering the whole request, the search is already inside that cost, so the tool
+stores 0 and says how much was included. Otherwise the rule prices it.
 """
 
 from __future__ import annotations
@@ -19,14 +18,14 @@ from .context import LedgerContext
 from .entries import ERROR_MESSAGE_MAX, TOOL, ServedModel, accounting, base_values, operation_key
 from .tool_identity import ToolIdentity
 
-# Section 2, "provider reported cost scope": the amount covers the whole request.
+# Provider reported cost scope: the amount covers the whole request.
 REQUEST_SCOPE = "request"
 # The meter named when a priced tool has no rate in the catalogue.
 MISSING_TOOL_RATE = "toolRate"
 
 
 def tool_key(run_id: str, call: str) -> str:
-    """UG-3: one key per tool call, so a replay writes the same row."""
+    """One key per tool call, so a replay writes the same row."""
     return operation_key(run_id, TOOL, call)
 
 
@@ -47,15 +46,15 @@ class ToolPriced:
     source: str
     pricing_missing: bool = False
     missing: tuple[str, ...] = ()
-    # Section 2, "settlement": the rule's formula and the units before and after.
+    # Settlement: the rule's formula and the units before and after.
     settlement: Optional[dict[str, Any]] = None
-    # Section 2, "included in provider usage" (UG-25).
+    # Included in provider usage.
     included: Optional[dict[str, Any]] = None
     provider_contacted: bool = False
 
 
 def price_tool(rule: Optional[ToolRule], *, units_before: Decimal = ZERO, units: Decimal = Decimal(1)) -> ToolPriced:
-    """A tool call by its rule; with none, 0 and ``free`` (UG-26, UG-27)."""
+    """A tool call by its rule; with none, 0 and ``free``."""
     if rule is None:
         return ToolPriced(cost_usd=ZERO, source=FREE)
     priced = charge(rule, units_before=units_before, units=units)
@@ -78,12 +77,12 @@ def price_hosted_search(
     units_before: Decimal = ZERO,
     fallback_rate_usd: Decimal = DEFAULT_WEB_SEARCH_FALLBACK_USD,
 ) -> ToolPriced:
-    """UG-25: inside the model call's reported cost, else priced by the rule.
+    """Hosted searches: inside the model call's reported cost, else priced by the rule.
 
     ``model_reported`` is whether every model call of the response reported its
     cost for the whole request; here a response is one model call. With no rule
     (no catalogue rate), the search is charged at ``fallback_rate_usd`` and
-    flagged: a missing price is never free (UG-20).
+    flagged: a missing price is never free.
     """
     if model_reported:
         included: dict[str, Any] = {
@@ -117,9 +116,9 @@ def tool_started_values(
     model: ServedModel,
     is_ai: bool = False,
 ) -> dict[str, Any]:
-    """The row written as the tool starts (UG-2).
+    """The row written as the tool starts.
 
-    A tool has no model of its own: it carries the one it is grouped under (UG-8).
+    A tool has no model of its own: it carries the one it is grouped under.
     """
     details: dict[str, Any] = {}
     if context.teams:

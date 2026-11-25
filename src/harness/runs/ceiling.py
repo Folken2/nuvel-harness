@@ -1,20 +1,20 @@
-"""The safety ceiling: one run's budget, and when it has been reached (limits.md LM-29).
+"""The safety ceiling: one run's budget, and when it has been reached.
 
 No ADK callbacks and no environment, so it is testable on its own. The plugin
 (``plugins/limits.py``) feeds it each model call and tool call, and asks it before
 each model call whether the run may go on. What a call or a tool cost is the caller's
 to say: this module is handed the functions that price them.
 
-A step is a model call or a tool call, counted together (owner decision 2). The
+A step is a model call or a tool call, counted together. The
 ceiling is reached at "equal or above": a ceiling of 60 steps allows exactly 60.
 The ceiling values come with the turn from the web app (``state_keys.LIMITS``),
-taken when the run started, so an admin's change applies to the next run only
-(LM-28). Without them the agent's own settings apply.
+taken when the run started, so an admin's change applies to the next run only.
+Without them the agent's own settings apply.
 
 At the ceiling the run gets one last call: the model is asked to
 say what was done and what is left, with tool calls turned off and its reply capped, so
 the person reads where things stand and not only that the run stopped. That call spends
-past the ceiling, by one short reply (owner decision, 2026-11-23). Its reply carries the
+past the ceiling, by one short reply. Its reply carries the
 pause, and any call after it ends the run with an empty one as before.
 """
 
@@ -178,7 +178,7 @@ def spent_before(
     cost_of_tool: Callable[[types.FunctionResponse], float],
 ) -> RunBudget:
     """What a run had used before this start, from its own saved events: a resume
-    continues with it, so a crash loop can't escape the ceiling (LM-32). A new run has
+    continues with it, so a crash loop can't escape the ceiling. A new run has
     used nothing."""
     calls = [event for event in events if is_model_call(event)]
     tools = _tool_results(events)

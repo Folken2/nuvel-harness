@@ -1,4 +1,4 @@
-"""The frame that tells the web app a call is in the ledger (limits.md LM-37, T-49)."""
+"""The frame that tells the web app a call is in the ledger."""
 
 import asyncio
 import json
@@ -107,7 +107,7 @@ def test_an_announcement_that_raises_never_reaches_the_run():
 
 
 def test_a_settlement_that_cost_nothing_is_announced_only_when_asked_to_be():
-    """A $0 tool call changes no meter, so it asks for no read (LM-37); a model call always does."""
+    """A $0 tool call changes no meter, so it asks for no read; a model call always does."""
 
     async def go():
         announced: list[str] = []

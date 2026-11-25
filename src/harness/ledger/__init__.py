@@ -2,8 +2,8 @@
 
 ``connect`` gives it somewhere to write and somewhere to price from (``stores.py``);
 with nothing connected, nothing is recorded and runs go on as before. ``sweeping``
-runs the stale-work sweep beside a service, closing work left open (``stale.py``,
-UG-14). Which database, and how long a run may take, are the product's settings:
+runs the stale-work sweep beside a service, closing work left open
+(``stale.py``). Which database, and how long a run may take, are the product's settings:
 this service's start-up is ``from_env.py``.
 """
 

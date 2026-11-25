@@ -1,6 +1,6 @@
 """The LiteLLM client every provider request goes through, so none skips the ledger.
 
-Each request is one attempt (usage-and-analytics.md UG-1): its operation is
+Each request is one attempt: its operation is
 written as started right before it goes out, and settled here when it raises,
 a streamed one's first chunk included (``first_chunk.py``).
 A request that returns is settled from its final response (``LedgerPlugin``, or

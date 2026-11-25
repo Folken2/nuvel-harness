@@ -1,4 +1,4 @@
-"""A background task's own interaction in the usage ledger (usage-and-analytics.md UG-5).
+"""A background task's own interaction in the usage ledger.
 
 A task is a run of its own that the agent starts from a turn's tool call, so no
 request opens its interaction: the agent does, from the parent turn's ledger state,

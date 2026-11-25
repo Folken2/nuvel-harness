@@ -1,7 +1,7 @@
-"""The part of one call's cost above the person's month limit (limits.md LM-22). Pure.
+"""The part of one call's cost above the person's month limit. Pure.
 
 Overage is a record for admins, never a charge and never a stop: a run that has
-started finishes (LM-20), and each of its calls past the limit says by how much.
+started finishes, and each of its calls past the limit says by how much.
 """
 
 from __future__ import annotations

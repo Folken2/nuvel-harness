@@ -65,7 +65,7 @@ class ProviderReport:
 
 class MeteredSummarizer(LlmEventSummarizer):
     """Records each summary call in the usage ledger as a compaction operation
-    of the run that triggered it, on the compaction model (UG-5).
+    of the run that triggered it, on the compaction model.
 
     ADK compacts after the run's last event and before its stream ends, so the
     web app hasn't closed the turn yet and the operation goes under it.

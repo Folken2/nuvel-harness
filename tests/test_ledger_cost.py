@@ -1,6 +1,6 @@
-"""The ledger's cost rules, against the acceptance tests of usage-and-analytics.md.
+"""The ledger's cost rules, one section of tests per rule.
 
-Each test names the AT it covers. Amounts are Decimal and compared exactly.
+Amounts are Decimal and compared exactly.
 """
 
 from decimal import Decimal as D
@@ -43,7 +43,7 @@ def tokens(input_tokens=0, output_tokens=0, **kw):
     return normalise(input_tokens=input_tokens, output_tokens=output_tokens, **kw)
 
 
-# --- AT-17 (UG-17) token normalisation ---------------------------------------
+# --- token normalisation ---------------------------------------
 
 
 def test_at17_input_reported_without_cache_gets_cache_added():
@@ -90,7 +90,7 @@ def test_ug17_steps_sum_and_caps_hold():
     assert normalise(input_tokens=-5, output_tokens=float("nan")).input_total == 0
 
 
-# --- AT-18 (UG-18) which cost applies -----------------------------------------
+# --- which cost applies -----------------------------------------
 
 
 def test_at18_reported_cost_wins_over_rates():
@@ -110,7 +110,7 @@ def test_at18_each_call_uses_its_own_best_source():
     assert first.cost_usd == D("0.01")
 
 
-# --- AT-19 (UG-19) the worked example ---------------------------------------
+# --- the worked example ---------------------------------------
 
 
 def test_at19_worked_example_is_exact():
@@ -150,7 +150,7 @@ def test_ug19_modality_input_at_its_own_rate():
     assert not priced.pricing_missing
 
 
-# --- AT-20 (UG-20) a missing price is never free -----------------------------
+# --- a missing price is never free -----------------------------
 
 
 def test_at20_empty_catalogue_uses_15_and_60():
@@ -208,7 +208,7 @@ def test_ug20_12h_cache_write_without_report_is_an_estimate():
     assert "cache_write_12h_rate" in priced.missing
 
 
-# --- AT-21 (UG-21) provider-reported wins, zero included -----------------------
+# --- provider-reported wins, zero included -----------------------
 
 
 def test_at21_reported_zero_is_zero_and_not_flagged():
@@ -230,7 +230,7 @@ def test_ug21_a_negative_or_bad_report_is_ignored():
         assert priced.source == "model_pricing"
 
 
-# --- AT-22 (UG-22) units --------------------------------------------------------
+# --- units --------------------------------------------------------
 
 
 def test_at22_per_image():
@@ -271,7 +271,7 @@ def test_ug22_unit_only_model_records_tokens_without_charging_them():
     assert not priced.pricing_missing
 
 
-# --- AT-23 (UG-23) aborted calls ---------------------------------------------
+# --- aborted calls ---------------------------------------------
 
 
 def test_at23_cut_off_is_estimated_at_the_model_rates():
@@ -303,7 +303,7 @@ def test_at23_neither_usage_nor_estimate_is_unknown_and_flagged():
     assert priced.source == "unknown" and priced.pricing_missing
 
 
-# --- AT-28 (UG-28) interaction cost source -----------------------------------
+# --- interaction cost source -----------------------------------
 
 
 @pytest.mark.parametrize(
@@ -322,7 +322,7 @@ def test_at28_interaction_source(entries, expected):
     assert interaction_source(Settled(D(cost), source) for source, cost in entries) == expected
 
 
-# --- AT-29 (UG-29) the split adds up -----------------------------------------
+# --- the split adds up -----------------------------------------
 
 
 def _every_priced_call():
@@ -370,7 +370,7 @@ def test_cost_quality_labels():
     assert quality(D("0.1"), "model_pricing", False) == "calculated"
 
 
-# --- AT-9 (UG-9) provider evidence is bounded --------------------------------
+# --- provider evidence is bounded --------------------------------
 
 
 def test_at9_only_counters_survive():
