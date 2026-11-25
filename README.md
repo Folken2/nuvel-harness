@@ -76,4 +76,5 @@ python3.13 -m venv .venv
 
 ## License
 
-MIT. See `LICENSE`, and `NOTICE` for the libraries it builds on.
+MIT. See `LICENSE`, and `NOTICE` for the libraries it builds on and the open-source
+agent harnesses it adapts code from or takes ideas from.

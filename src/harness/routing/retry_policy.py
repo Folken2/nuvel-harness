@@ -2,7 +2,9 @@
 
 Pure, so the client (``routing/client.py``) only carries the steps out. Drawn from
 OpenHands (``llm/utils/retry_mixin.py``, ``llm/fallback_strategy.py``), codex
-(``protocol/src/error.rs``) and goose (``goose-providers/src/http_status.rs``):
+(``protocol/src/error.rs``) and goose (``goose-providers/src/http_status.rs``). Reading
+the server's delay and walking an error's causes are adapted from OpenHands
+(``llm/utils/retry_after.py``, ``llm/exceptions/classifier.py``, MIT; see NOTICE):
 
 - a limit that lifts by itself (a rate limit, an overloaded or failing server, a
   dropped connection) is sent again after a wait, the server's own when it names one,
