@@ -81,10 +81,15 @@ class TimedTool(BaseTool):
         # Past this, a call gets a failed result and the turn goes on.
         self._call_timeout_seconds = call_timeout_seconds
         self._shown_as = rules.shown_as or app
-        self._refused_key = tool.name if rules.many_apps else app
+        self._many_apps = rules.many_apps
         self._refused_words = "that tool" if rules.many_apps else "it"
         # Where a page this tool's server attaches can be read (MCP Apps); None for none.
         self.page_source = page_source
+
+    @property
+    def _refused_key(self) -> str:
+        # Read from the name each time: ADK prefixes a copy of this tool after it's built.
+        return self.name if self._many_apps else self._app
 
     @property
     def effect_hints(self) -> frozenset[str]:

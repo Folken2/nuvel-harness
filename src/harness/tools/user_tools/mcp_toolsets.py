@@ -97,43 +97,52 @@ class TimedMcpToolset(McpToolset):
         self._unavailable = unavailable
         # Its tools' calls running now: a cache never closes it under one.
         self.calls = CallsInFlight()
+        self._left_out: tuple[str, ...] = ()
 
-    async def get_tools_with_prefix(
-        self, readonly_context: Optional[ReadonlyContext] = None
-    ) -> list[BaseTool]:
-        return (await self.usable_tools(readonly_context)).tools
+    async def get_tools(self, readonly_context: Optional[ReadonlyContext] = None) -> list[BaseTool]:
+        """The server's tools a model may be given, each under the call limit.
 
-    async def usable_tools(
-        self, readonly_context: Optional[ReadonlyContext] = None
-    ) -> UsableTools:
-        """The tools a model may be given, and the names left out of them."""
+        ADK prefixes what this returns (``get_tools_with_prefix``, which is final), so the
+        name check here is on the name the model will see after that."""
         # A tool a server made for its own page only never reaches the model (MCP Apps).
-        tools = model_tools(await super().get_tools_with_prefix(readonly_context), server=self._app)
-        usable = [tool for tool in tools if _VALID_TOOL_NAME.fullmatch(tool.name)]
-        left_out = tuple(tool.name for tool in tools if not _VALID_TOOL_NAME.fullmatch(tool.name))
-        if left_out:
+        tools = model_tools(await super().get_tools(readonly_context), server=self._app)
+        usable = [tool for tool in tools if _VALID_TOOL_NAME.fullmatch(self._shown_name(tool))]
+        self._left_out = tuple(
+            self._shown_name(tool) for tool in tools if not _VALID_TOOL_NAME.fullmatch(self._shown_name(tool))
+        )
+        if self._left_out:
             logger.warning(
                 "left out %d tools with invalid names from: %s",
-                len(left_out),
+                len(self._left_out),
                 self._app,
             )
             if readonly_context is not None:
                 self._unavailable.add(readonly_context.invocation_id, self._app)
-        return UsableTools(
-            [
-                TimedTool(
-                    tool,
-                    self._app,
-                    self._unavailable,
-                    self.calls,
-                    self._rules,
-                    call_timeout_seconds=self._call_timeout_seconds,
-                    page_source=PageSource(connection=self.connection_params, server=self._app),
-                )
-                for tool in usable
-            ],
-            left_out,
-        )
+        return [
+            TimedTool(
+                tool,
+                self._app,
+                self._unavailable,
+                self.calls,
+                self._rules,
+                call_timeout_seconds=self._call_timeout_seconds,
+                page_source=PageSource(connection=self.connection_params, server=self._app),
+            )
+            for tool in usable
+        ]
+
+    async def usable_tools(
+        self, readonly_context: Optional[ReadonlyContext] = None
+    ) -> UsableTools:
+        """The tools a model may be given, prefixed, and the names left out of them."""
+        tools = await self.get_tools_with_prefix(readonly_context)
+        # Set by the get_tools behind these tools: ADK reuses its list only for the same
+        # invocation as the last call, and nothing awaits between that call and this read.
+        return UsableTools(tools, self._left_out)
+
+    def _shown_name(self, tool: BaseTool) -> str:
+        # As BaseToolset.get_tools_with_prefix names it.
+        return f"{self.tool_name_prefix}_{tool.name}" if self.tool_name_prefix else tool.name
 
 
 def build_mcp_toolset(
