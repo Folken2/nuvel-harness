@@ -45,7 +45,14 @@ set_layout(FileLayout(original="original/", output="output/", reading="markdown/
 ```
 
 For a whole product in two files, an agent and the service that runs it, see
-[`examples/`](examples/).
+[`examples/`](examples/), and [docs/build-an-agent.md](docs/build-an-agent.md) for a
+walkthrough of building one.
+
+## Docs
+
+[docs/README.md](docs/README.md) is the index: one page per package (what it guarantees, what
+it costs, how to configure it, how to test code that uses it), the walkthrough, and how the
+harness relates to ADK.
 
 The harness never reads the environment: settings are passed in, so one process can hold two
 configurations and a test never depends on the shell it runs in.
