@@ -48,7 +48,9 @@ layout, which a real product sets at its own start.
   harness itself. A product's file paths, issue numbers, settings names, customers and the
   vendors it uses stay in that product's repo; name a provider only for its API's behaviour
   (an error wording, a field), next to the others that behave alike.
-  `tests/test_no_outside_references.py` fails on rule and ticket ids from outside documents.
+  `tests/test_no_outside_references.py` fails on ticket-shaped ids (capitals, a dash, a
+  number), section citations and decision records anywhere in the repo's text. It is a net,
+  not a proof: the rule is what holds.
 - **Code taken from another project is credited in the same PR.** Its module docstring
   names the source file, and `NOTICE` gets the project, its copyright line and its license.
   Code written from scratch on another project's idea names the source in its docstring

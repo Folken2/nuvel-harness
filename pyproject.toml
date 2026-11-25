@@ -71,12 +71,13 @@ select = ["E4", "E7", "E9", "F"]
 # These names are served by the module's __getattr__, which F822 can't see.
 "src/harness/wire_names.py" = ["F822"]
 
-# Only what an ADK upgrade can break silently: an override of a method ADK marks final, or
-# one whose signature no longer matches ADK's. Everything else stays off.
+# Only what an ADK upgrade can break silently: an override of a method ADK marks final, or a
+# method or typed attribute that no longer matches ADK's. Everything else stays off.
 [tool.pyright]
 include = ["src"]
 typeCheckingMode = "off"
 reportIncompatibleMethodOverride = "error"
+reportIncompatibleVariableOverride = "error"
 # Without ADK in reach nothing above is checked, so that fails too.
 reportMissingImports = "error"
 reportMissingModuleSource = "error"
