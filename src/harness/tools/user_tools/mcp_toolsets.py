@@ -25,7 +25,7 @@ from mcp.shared._httpx_utils import create_mcp_http_client
 from ..mcp_apps.advertise import AdvertisingTransport
 from ..mcp_apps.page import PageSource
 from ..mcp_apps.visibility import model_tools
-from .mcp_address import PublicPeersOnly
+from .mcp_address import HttpsOnly, PublicPeersOnly
 from .mcp_limits import McpLimits
 from .mount_rules import DEFAULT_RULES, MountRules, rules_of
 from .timed_tool import CallsInFlight, TimedTool
@@ -46,12 +46,13 @@ def _client_without_redirects(
     allow_local: bool = False,
     advertise_apps: bool = False,
 ) -> httpx.AsyncClient:
-    """The MCP client, with no redirects and only public servers at the socket."""
+    """The MCP client, with no redirects, https only, and only public servers at the socket."""
     client = create_mcp_http_client(headers=headers, timeout=timeout, auth=auth)
     client.follow_redirects = False
     # httpx offers no public way to give its default transport a network backend.
-    transport = httpx.AsyncHTTPTransport()
-    transport._pool._network_backend = PublicPeersOnly(allow_local=allow_local)
+    pool = httpx.AsyncHTTPTransport()
+    pool._pool._network_backend = PublicPeersOnly(allow_local=allow_local)
+    transport: httpx.AsyncBaseTransport = HttpsOnly(pool, allow_local=allow_local)
     # Only the initialize request changes, by one field (MCP Apps, tools/mcp_apps/advertise.py).
     client._transport = AdvertisingTransport(transport) if advertise_apps else transport
     # A proxy from the environment would replace that transport, and its socket
