@@ -1,0 +1,13 @@
+nuvel-harness
+Copyright (c) 2026 Albert Folch. Licensed under the MIT License (see LICENSE).
+
+This project depends on the libraries below. It installs them as separate
+packages and contains none of their code; each keeps its own license.
+
+- Agent Development Kit (google-adk), Copyright Google LLC: Apache License 2.0
+- Google Gen AI SDK (google-genai), Copyright Google LLC: Apache License 2.0
+- LiteLLM, MCP Python SDK, FastAPI, Pydantic, SQLAlchemy, PyJWT, PyYAML: MIT License
+- Starlette, HTTPX, HTTPCore: BSD 3-Clause License
+
+Google and Agent Development Kit are trademarks of Google LLC. This project is
+not affiliated with, sponsored by or endorsed by Google.

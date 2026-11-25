@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nuvel-harness"
+version = "0.1.0"
+description = "Production machinery for agents built on Google ADK: resumable runs, model routing and retry, context management, usage metering, approval and tool plugins."
+readme = "README.md"
+requires-python = ">=3.13"
+license = "MIT"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "Albert Folch" }]
+keywords = ["agents", "google-adk", "llm", "litellm", "mcp", "agent-harness"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
+]
+# Ranges, not pins: a product pins the exact, hash-checked versions in its own lock and
+# installs this package with --no-deps, then runs `pip check` against these ranges.
+dependencies = [
+    "google-adk[db]>=2.14,<3",
+    "google-genai>=2.33,<3",
+    # Never 1.82.7, 1.82.8 or 1.107.0: compromised releases. The floor is above them.
+    "litellm>=1.108.3,<2",
+    "mcp>=1.27,<2",
+    "fastapi>=0.141",
+    "starlette>=1.10,<2",
+    "pydantic>=2.12,<3",
+    "sqlalchemy>=2.1,<3",
+    "httpx>=0.28,<1",
+    "httpcore>=1.0.9,<2",
+    "pyjwt>=2.15,<3",
+    "pyyaml>=6,<7",
+]
+
+[project.optional-dependencies]
+test = ["pytest==9.2.0", "pytest-asyncio==1.4.1.post1"]
+
+[project.urls]
+Repository = "https://github.com/Folken2/nuvel-harness"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+harness = ["py.typed"]
+
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"
