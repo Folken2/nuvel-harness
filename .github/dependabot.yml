@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Bumps the exact pins of the test and lint extras. The runtime dependencies are ranges,
+  # so only a release outside a range opens a PR, and that PR is a decision to widen it.
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
