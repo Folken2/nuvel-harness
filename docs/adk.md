@@ -111,8 +111,10 @@ What the harness adds:
 - A per-call time limit. ADK waits as long as its read timeout, five minutes by default. Past
   the limit, the app is refused for the rest of the turn but stays listed, so a model that
   calls it again gets the same answer at once.
-- Only public servers: https only, every resolved address must be public, checked again on each
-  connection at the socket. Redirects and proxies from the environment are off.
+- Only public servers: the client refuses any request that isn't https before it connects,
+  and checks on each connection, at the socket, that the server's address is public.
+  `check_server_address` runs both checks up front. Redirects and proxies from the environment
+  are off.
 - A tool whose name model providers would refuse (outside `[a-zA-Z0-9_-]{1,64}`) is left out
   and reported, rather than failing the whole request.
 - Toolsets are cached per server and owner, never closed while one of their calls is running,

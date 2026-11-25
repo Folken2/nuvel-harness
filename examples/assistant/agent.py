@@ -16,7 +16,7 @@ from google.adk.models import BaseLlm
 from google.adk.models.lite_llm import LiteLlm
 
 from harness.plugins import BadRepliesPlugin, LoopGuardPlugin, PlanFieldPlugin, TurnLogPlugin
-from harness.runs import LoopSettings
+from harness.runs import LoopSettings, loop_guard
 from harness.tools import ask_tools, plan_tools
 
 INSTRUCTION = """You are a careful assistant.
@@ -50,7 +50,7 @@ def build_app(model: Union[str, BaseLlm]) -> App:
         # guard counts their calls.
         plugins=[
             PlanFieldPlugin(),
-            BadRepliesPlugin(),
+            BadRepliesPlugin(notes={loop_guard.KIND: loop_guard.NOTE}),
             # A note to the model at the third identical call, a question to the person at the fifth.
             LoopGuardPlugin(LoopSettings(note_at=3, stop_at=5), ask_tool="ask_person"),
             TurnLogPlugin(),
