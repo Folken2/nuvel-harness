@@ -15,7 +15,8 @@ extracted from a production agent platform, where it runs every turn.
 - **Usage metering.** Every model, tool and compaction call is priced and written to a ledger,
   including the attempts a retry or a fallback made.
 - **Approval.** Tools with effects pause the run and ask the person; a policy and a classifier
-  decide what can run unasked, and the gate stops asking after a few refusals in a row.
+  decide what can run unasked, a second question asks whether the person asked for the call in
+  their own messages, and the gate stops asking after a few refusals in a row.
 - **Tools and plugins.** A tool gateway that lists large toolsets in a catalog and loads them on
   demand, background tasks that report back, `ask_person`, a plan the agent keeps, MCP Apps
   pages, conversation files, loop guards and a run ceiling.

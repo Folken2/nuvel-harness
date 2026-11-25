@@ -7,7 +7,9 @@ talk to the person, and any call that would ask after that is refused without a 
 
 Counted from the run's own events, within the person's current message: an approval ends
 the row, and so does their next message, which starts a new invocation. An answer that
-decided nothing (they answered another question of the same step) is not a refusal.
+decided nothing (they answered another question of the same step) is not a refusal, and
+neither is one in their own words: they are talking with the agent, not turning it away,
+so it neither adds to the row nor ends it.
 
 Pure. ``gate.py`` asks it at each decision and before each card.
 """
@@ -31,7 +33,8 @@ STOPPED_NOTE = (
 
 
 def _decision(response: Any) -> bool | None:
-    """True for approved, False for denied, None when the answer decided nothing."""
+    """True for approved, False for denied, None when the answer decided nothing or was
+    the person's own words."""
     try:
         confirmation = ToolConfirmation.from_response_dict(response or {})
     except (ValueError, TypeError):
@@ -39,8 +42,10 @@ def _decision(response: Any) -> bool | None:
     if confirmation.confirmed:
         return True
     payload = confirmation.payload
-    if isinstance(payload, dict) and payload.get(wire_names.NOT_DECIDED):
-        return None
+    if isinstance(payload, dict):
+        said = payload.get("said")
+        if payload.get(wire_names.NOT_DECIDED) or (isinstance(said, str) and said.strip()):
+            return None
     return False
 
 

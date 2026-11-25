@@ -22,14 +22,14 @@ from ..runs.own_messages import is_own_message
 
 
 # What SaveFilesAsArtifactsPlugin leaves in a message in place of the file it moved out.
-_MOVED_FILE = "[Uploaded Artifact:"
+MOVED_FILE = "[Uploaded Artifact:"
 
 
 def _carries_file(event: Event) -> bool:
     if event.author != "user" or is_own_message(event) or event.content is None:
         return False
     return any(
-        part.inline_data is not None or part.file_data is not None or (part.text or "").lstrip().startswith(_MOVED_FILE)
+        part.inline_data is not None or part.file_data is not None or (part.text or "").lstrip().startswith(MOVED_FILE)
         for part in event.content.parts or []
     )
 
