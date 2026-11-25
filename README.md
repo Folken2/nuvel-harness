@@ -44,6 +44,9 @@ set_layout(FileLayout(original="original/", output="output/", reading="markdown/
                       tool_results="tool-results/", pages="app-pages/"))
 ```
 
+For a whole product in two files, an agent and the service that runs it, see
+[`examples/`](examples/).
+
 The harness never reads the environment: settings are passed in, so one process can hold two
 configurations and a test never depends on the shell it runs in.
 
