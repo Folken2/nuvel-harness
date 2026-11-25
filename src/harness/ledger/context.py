@@ -31,7 +31,7 @@ class LedgerContext:
     actor_email: Optional[str] = None
     team_id: Optional[str] = None
     team_name: Optional[str] = None
-    # Several teams: their ids and names, kept in details (UG-11).
+    # Several teams: their ids and names, kept in details.
     teams: tuple[dict[str, str], ...] = ()
     conversation_id: Optional[str] = None
     message_id: Optional[str] = None
@@ -90,7 +90,7 @@ class RunLedger:
     """One run's ledger state while it goes on."""
 
     context: LedgerContext
-    # The turn model's rates, as the turn sent them (model-controls.md MC-19).
+    # The turn model's rates, as the turn sent them.
     rates: Optional[Rates]
     # The requested model's LiteLLM id ("provider/model").
     requested_model: Optional[str]
@@ -132,7 +132,7 @@ _run: contextvars.ContextVar[Optional[RunLedger]] = contextvars.ContextVar(
 
 
 def calls_before(events: Sequence[Any], run_id: str) -> int:
-    """Model calls the run already made, on a resume: their keys are taken (UG-3).
+    """Model calls the run already made, on a resume: their keys are taken.
     ``events`` are the session's; a call is one that finished, with its usage."""
     return sum(
         1

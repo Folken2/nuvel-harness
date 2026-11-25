@@ -1,4 +1,4 @@
-"""One ledger operation per tool call (usage-and-analytics.md UG-1, UG-25 to UG-27).
+"""One ledger operation per tool call.
 
 ``ToolLedgerPlugin`` calls ``begin`` as a tool is about to run, and ``finish`` or
 ``failed`` when it ends. The model meter calls ``hosted_searches`` for the web
@@ -46,7 +46,7 @@ def _call_part(run: RunLedger, call_id: Optional[str]) -> str:
     """A tool call's key part: its id, with a suffix when this process already used it.
 
     Some models number their calls (``tool_0``) afresh in each response, so one id
-    can come back in a run; a replay in a new process gets the same key back (UG-3).
+    can come back in a run; a replay in a new process gets the same key back.
     """
     base = call_id or f"t{len(run.tool_ids)}"
     part, n = base, 1
@@ -58,17 +58,17 @@ def _call_part(run: RunLedger, call_id: Optional[str]) -> str:
 
 
 def _grouping_model(run: RunLedger) -> ServedModel:
-    """A tool has no model of its own: it goes under the turn's selected model (UG-8)."""
+    """A tool has no model of its own: it goes under the turn's selected model."""
     return served_model(None, run.requested_model)
 
 
 def rule_for(identity: ToolIdentity) -> Optional[ToolRule]:
-    """The price rule of a tool the agent called. None of them has one today (UG-27)."""
+    """The price rule of a tool the agent called. None of them has one today."""
     return None
 
 
 def begin(tool: Any, call_id: Optional[str]) -> None:
-    """Writes the ``started`` operation for a tool about to run (UG-2)."""
+    """Writes the ``started`` operation for a tool about to run."""
     if (active := _active()) is None or not call_id:
         return
     run, writer = active
@@ -172,8 +172,9 @@ def hosted_searches(
 ) -> None:
     """The web searches the provider ran inside one model call: one tool operation.
 
-    Its model is the one that searched, and it is priced by UG-25: inside the
-    model call's reported cost, else by the router's per-call rule.
+    Its model is the one that searched. Its cost is inside the model call's
+    reported cost when that covers the whole request, else the router's per-call rule
+    prices it.
     """
     identity = hosted_web_search()
     key = hosted_search_key(run.context.run_id, model_call_key)

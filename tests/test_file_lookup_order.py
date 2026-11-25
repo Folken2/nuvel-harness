@@ -40,7 +40,7 @@ def test_the_kept_original_comes_first_with_no_times_to_compare():
 
 def test_the_agents_later_edit_of_an_upload_wins_over_the_upload():
     # Uploaded report.docx; run 1 edits it and shares report.docx; run 2 asks for it,
-    # by either name. Before, the unedited upload came back (review of PR 352).
+    # by either name. Before, the unedited upload came back.
     files = _VersionedFiles(
         ["original/report.docx", "report.docx"],
         {"original/report.docx": 100.0, "report.docx": 200.0},
@@ -52,8 +52,8 @@ def test_the_agents_later_edit_of_an_upload_wins_over_the_upload():
 
 
 def test_the_persons_later_edit_of_an_upload_wins_over_the_agents_file():
-    # docs/specs/office-editing-and-canvas.md: the person's edit of an upload is saved
-    # under original/<name>, so it is the newest of the two then (T-2).
+    # The person's edit of an upload is saved under original/<name>, so it is the
+    # newest of the two then.
     files = _VersionedFiles(
         ["original/report.docx", "report.docx"],
         {"original/report.docx": 300.0, "report.docx": 200.0},
@@ -121,10 +121,10 @@ def _latest(saves, name):
 
 
 def test_the_latest_save_wins_for_an_agent_reshare_and_for_a_persons_edit():
-    # Agent re-share after the upload: the agent's copy (PR 352 review).
+    # Agent re-share after the upload: the agent's copy.
     assert _latest([("original/report.docx", "upload"), ("report.docx", "agent edit")], "report.docx") == "agent edit"
     assert _latest([("original/report.docx", "upload"), ("report.docx", "agent edit")], "output/report.docx") == "agent edit"
-    # The person's edit after the agent's copy, saved under original/ (spec T-2, PR 354).
+    # The person's edit after the agent's copy, saved under original/.
     saves = [("original/report.docx", "upload"), ("report.docx", "agent copy"), ("original/report.docx", "person edit")]
     assert _latest(saves, "report.docx") == "person edit"
 

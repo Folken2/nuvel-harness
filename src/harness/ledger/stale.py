@@ -1,16 +1,16 @@
-"""Work left ``started`` gets closed (usage-and-analytics.md UG-14, D-11).
+"""Work left ``started`` gets closed.
 
 A crash or a lost connection between an operation's start and its settlement
 leaves a row ``started`` for good. Once it is older than the safety ceiling's
 time value plus an hour, no run can still own it, so a periodic sweep settles
-it as an aborted call (UG-23): status ``failed``, error code ``ABANDONED``,
+it as an aborted call: status ``failed``, error code ``ABANDONED``,
 the estimate stored when it started (``entries.started_values``) priced at the
 model's catalogue rates. Then the interactions left open with nothing pending
 under them are closed the same way.
 
 Settling goes through ``LedgerStore.settle``, so the person's buckets move in
 the same transaction and a run settling the same row at the same time wins or
-loses cleanly: whichever settles first, the other changes nothing (UG-2).
+loses cleanly: whichever settles first, the other changes nothing.
 
 ``abandoned_values`` is pure; ``sweep`` and ``sweep_forever`` do the I/O.
 """
@@ -37,7 +37,7 @@ from .stores import INVOCATION_KINDS, Prices, Store
 logger = logging.getLogger(__name__)
 
 ABANDONED = "ABANDONED"
-# UG-14: the ceiling's time value plus this, so a long run is never closed while alive.
+# Stale after the ceiling's time value plus this, so a long run is never closed while alive.
 STALE_MARGIN_SECONDS = 3600
 SWEEP_INTERVAL_SECONDS = 600
 BATCH_SIZE = 500
@@ -49,7 +49,7 @@ def stale_cutoff(now: datetime, ceiling_seconds: float) -> datetime:
 
 
 def _stored_estimate(details: Mapping[str, Any]) -> tuple[int, int]:
-    """The estimate written at the start, else LM-24's defaults."""
+    """The estimate written at the start, else the default estimate for a cut-off call."""
     stored = details.get("estimate") if isinstance(details, Mapping) else None
     if isinstance(stored, Mapping):
         return estimate_tokens(
@@ -61,7 +61,7 @@ def _stored_estimate(details: Mapping[str, Any]) -> tuple[int, int]:
 def abandoned_values(
     row: Mapping[str, Any], rates: Optional[Rates], fallback: FallbackRates
 ) -> dict[str, Any]:
-    """What settling an abandoned operation writes (UG-14 via UG-23).
+    """What settling an abandoned operation writes: it is closed as an aborted call.
 
     An invocation counts as contacted and is charged its stored estimate,
     ``estimated_on_abort``. A tool has nothing to estimate: cost 0, source

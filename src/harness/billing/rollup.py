@@ -1,7 +1,6 @@
 """How sure each ledger amount is, and an interaction's totals from its operations.
 
-usage-and-analytics.md section 2 ("Cost quality"), UG-28 and UG-29. Pure, so
-the ledger writer and the reports agree on one set of labels.
+Pure, so the ledger writer and the reports agree on one set of labels.
 """
 
 from __future__ import annotations
@@ -30,7 +29,8 @@ CALCULATED = "calculated"
 
 @dataclass(frozen=True)
 class CostSplit:
-    """The four parts of UG-29. They add up to the entry's cost, none negative."""
+    """The four parts of an entry's cost: provider reported, calculated, estimated and
+    unresolved. They add up to the entry's cost, none negative."""
 
     provider: Decimal = ZERO
     calculated: Decimal = ZERO
@@ -61,7 +61,7 @@ class Settled:
 
 
 def quality(cost_usd: Decimal, source: str, pricing_missing: bool) -> str:
-    """The simpler label of section 2, "Cost quality"."""
+    """The simpler label: how sure the amount is (its cost quality)."""
     if source == PROVIDER_REPORTED:
         return PROVIDER_REPORTED
     if source == ESTIMATED_ON_ABORT:
@@ -72,7 +72,7 @@ def quality(cost_usd: Decimal, source: str, pricing_missing: bool) -> str:
 
 
 def is_unresolved(entry: Settled) -> bool:
-    """UG-29: whether the entry counts among the unresolved ones."""
+    """Whether the entry counts among the unresolved ones."""
     if entry.source == PROVIDER_REPORTED:
         return False
     return (
@@ -83,7 +83,7 @@ def is_unresolved(entry: Settled) -> bool:
 
 
 def split(entry: Settled) -> CostSplit:
-    """Which of the four parts the operation's cost belongs to (UG-29)."""
+    """Which of the four parts the operation's cost belongs to."""
     cost = money(entry.cost_usd)
     if entry.source == PROVIDER_REPORTED:
         return CostSplit(provider=cost)
@@ -99,7 +99,7 @@ def _paid_sources(entries: list[Settled]) -> set[str]:
 
 
 def interaction_source(entries: Iterable[Settled]) -> str:
-    """The interaction's cost source from its settled operations (UG-28)."""
+    """The interaction's cost source from its settled operations."""
     entries = list(entries)
     cost = sum((e.cost_usd for e in entries), ZERO)
     paid = _paid_sources(entries)
@@ -126,7 +126,7 @@ class Totals:
 
 
 def totals(entries: Iterable[Settled]) -> Totals:
-    """An interaction's cost, source and split: the sum of its leaves (UG-7)."""
+    """An interaction's cost, source and split: the sum of its leaves."""
     entries = list(entries)
     parts = sum((split(e) for e in entries), CostSplit())
     return Totals(

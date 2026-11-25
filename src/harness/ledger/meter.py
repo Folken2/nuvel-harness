@@ -1,4 +1,4 @@
-"""One ledger operation per provider attempt (usage-and-analytics.md UG-1 to UG-3).
+"""One ledger operation per provider attempt.
 
 ``MeteredLiteLLMClient`` (``routing/client.py``) calls ``begin_attempt`` right
 before each request goes to a provider and ``attempt_failed`` when one raises.
@@ -63,7 +63,7 @@ def metering_as(
 ) -> Iterator[None]:
     """Calls inside are recorded as ``kind`` (compaction) instead of model calls;
     None records nothing. ``call_id`` keys them instead of a count, so a replay
-    writes the same key (UG-3); ``requested`` is the model they asked for."""
+    writes the same key; ``requested`` is the model they asked for."""
     kind_token = _kind.set(kind)
     call_token = _call.set((call_id, requested) if call_id else None)
     try:
@@ -83,7 +83,7 @@ def call_key(call_id: Optional[str]) -> str:
     """A stable key part for a call that isn't counted, such as the advisor's tool call.
 
     A replay after a restart is a new process and gets the same id back, so it writes
-    the same row (UG-3). An id this process already keyed in the run is a second call,
+    the same row. An id this process already keyed in the run is a second call,
     never the first one again (a tool call runs at most once, runs/resume.py), so it
     gets a suffix rather than losing its row. With no id, a fresh one.
     """
@@ -107,7 +107,7 @@ def _active() -> Optional[tuple[RunLedger, LedgerWriter]]:
 
 
 def new_call() -> None:
-    """A model call starts: its attempts share one index (UG-3)."""
+    """A model call starts: its attempts share one index."""
     if (active := _active()) is not None:
         run = active[0]
         kind = _kind.get() or MODEL
@@ -129,7 +129,7 @@ def _take_index(run: RunLedger, kind: str) -> int | str:
 
 
 def begin_attempt(model: Any) -> Optional[str]:
-    """Writes the ``started`` operation for the request about to go out (UG-2)."""
+    """Writes the ``started`` operation for the request about to go out."""
     if (active := _active()) is None:
         return None
     run, writer = active
@@ -172,7 +172,7 @@ def _list_cost(run: RunLedger, kind: str, usage: Optional[TokenUsage], failed: b
 
 
 def attempt_failed(error: BaseException, *, contacted: bool = True) -> None:
-    """The request raised: refused with an error, or cut off with no usage (UG-23)."""
+    """The request raised: refused with an error, or cut off with no usage."""
     if (active := _active()) is None or active[0].open_operation is None:
         return
     run, writer = active
@@ -246,9 +246,9 @@ def finish(
     units: Optional[Units] = None,
 ) -> None:
     """Settles the open operation with the call's final response, and records the
-    hosted web searches the provider ran inside it (UG-25). ``output_count`` is the
+    hosted web searches the provider ran inside it. ``output_count`` is the
     images an image generation returned. ``units`` are what a unit-priced call billed,
-    such as its pictures (UG-22), for a model whose rates price by unit."""
+    such as its pictures, for a model whose rates price by unit."""
     if (active := _active()) is None or active[0].open_operation is None:
         return
     run, writer = active
@@ -286,7 +286,7 @@ def finish(
             output_count=output_count,
         )
 
-    # Every settled call moves the person's meters, so each one is announced (LM-37).
+    # Every settled call moves the person's meters, so each one is announced.
     writer.settle(run, key, values, on_recorded=run.announce_recorded)
     if isinstance(web_searches, int) and not isinstance(web_searches, bool) and web_searches > 0:
         tool_meter.hosted_searches(

@@ -24,7 +24,7 @@ ERROR_MESSAGE_MAX = 500
 
 
 def operation_key(run_id: str, kind: str, index: int | str, attempt: int = 0) -> str:
-    """UG-3: a replay writes the same key, a retry the next attempt."""
+    """A replay writes the same key, a retry the next attempt."""
     return f"{run_id}:{kind}:{index}:{attempt}"
 
 
@@ -45,7 +45,7 @@ class ServedModel:
 
 
 def name_served(ids: ModelIds, routed: object, requested: Optional[str]) -> ServedModel:
-    """The model that served the call, normalised (UG-8), under a product's id scheme.
+    """The model that served the call, normalised, under a product's id scheme.
 
     A router's mark goes, so an id through a router and the maker's own are one model,
     and the provider is the maker the id's prefix stands for, as the catalogue names
@@ -102,7 +102,7 @@ TASK_EVENT_TYPE = "agent.task"
 
 
 def task_interaction_key(task_id: str) -> str:
-    """UG-3: the task's id is its run id, so a resumed task finds its entry."""
+    """The task's id is its run id, so a resumed task finds its entry."""
     return f"{task_id}:{TASK_EVENT_TYPE}"
 
 
@@ -141,9 +141,9 @@ def started_values(
     estimate: tuple[int, int],
     requested: Optional["RequestedModel"] = None,
 ) -> dict[str, Any]:
-    """The row written before the provider is called (UG-2).
+    """The row written before the provider is called.
 
-    The estimate is stored now: the stale-work job has no prompt to read (UG-23).
+    The estimate is stored now: the stale-work job has no prompt to read.
     ``requested`` names a model other than the turn's.
     """
     model = served_model(None, requested_model)
@@ -221,7 +221,7 @@ def settled_values(
 ) -> dict[str, Any]:
     """What settling an operation writes: final status, tokens, cost and evidence.
 
-    ``output_count`` is the images an image generation returned (section 2).
+    ``output_count`` is the images an image generation returned.
     ``list_cost`` is what the call would have cost at the model's own rates when
     someone else paid for it; it is kept beside the cost and never counted in it.
     """
@@ -239,7 +239,7 @@ def settled_values(
     if evidence:
         details["provider_usage"] = evidence
     if priced.source == PROVIDER_REPORTED:
-        # The router's reported cost covers the whole request, search fees included (UG-25).
+        # The router's reported cost covers the whole request, search fees included.
         details["provider_reported_cost_scope"] = "request"
     if (rid := provider_id(response_id)) is not None:
         details["provider_response_id"] = rid

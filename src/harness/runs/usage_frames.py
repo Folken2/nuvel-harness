@@ -1,4 +1,4 @@
-"""Tells whoever reads a run that one of its model calls is now in the ledger (limits.md LM-37).
+"""Tells whoever reads a run that one of its model calls is now in the ledger.
 
 The composer's meters must match what the ledger holds, so the web app reads the
 person's buckets again when this frame arrives, not when the model's event does: the

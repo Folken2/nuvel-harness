@@ -1,4 +1,4 @@
-"""Ledger writes that never hold a run up (limits.md LM-23).
+"""Ledger writes that never hold a run up.
 
 Each write runs in its own task with three retries (1, 2 and 4 seconds), and
 a failure is logged with the run id, never raised into the run. A settlement
@@ -68,7 +68,7 @@ class LedgerWriter:
         """``values`` is built in the task: pricing may read the catalogue.
 
         ``on_recorded`` is called once the settlement has committed, never when it
-        failed, so what it announces is what the ledger holds (limits.md LM-37).
+        failed, so what it announces is what the ledger holds.
         With ``announce_free`` false it isn't called for an operation that cost
         nothing: a free tool call changes no meter, so there's nothing to read again.
         """

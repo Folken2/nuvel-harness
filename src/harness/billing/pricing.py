@@ -1,11 +1,11 @@
 """What one provider call cost, and how sure that number is.
 
-The rules of usage-and-analytics.md 3.2 (UG-18 to UG-23), with no I/O, so the
-ledger writer and the run budget share one answer. Amounts are ``Decimal``
-rounded to 12 places: the worked example of AT-19 must come out exact.
+The pricing rules, with no I/O, so the ledger writer and the run budget share
+one answer. Amounts are ``Decimal`` rounded to 12 places, so a worked example
+comes out exact.
 
 Blank means unknown and 0 means free: a rate that is ``None`` is never priced
-as 0 (UG-20).
+as 0.
 """
 
 from __future__ import annotations
@@ -21,18 +21,18 @@ MILLION = Decimal(1_000_000)
 PLACES = Decimal("0.000000000001")
 ZERO = Decimal(0)
 
-# When the catalogue has no positive rate at all (UG-20).
+# When the catalogue has no positive rate at all.
 DEFAULT_FALLBACK_INPUT_PER_1M = Decimal(15)
 DEFAULT_FALLBACK_OUTPUT_PER_1M = Decimal(60)
 
-# LM-24: when a cut-off call's prompt size and maximum output are not known.
+# The estimate when a cut-off call's prompt size and maximum output are not known.
 DEFAULT_ESTIMATE_INPUT_TOKENS = 16_000
 DEFAULT_ESTIMATE_OUTPUT_TOKENS = 4_096
 
 UNITS = ("image", "megapixel", "second", "request")
 STANDARD_TIERS = (None, "", "default", "standard")
 
-# Cost sources (section 2, "Cost sources").
+# Cost sources.
 PROVIDER_REPORTED = "provider_reported"
 MODEL_PRICING = "model_pricing"
 FALLBACK_PRICING = "fallback_pricing"
@@ -59,7 +59,7 @@ def to_decimal(value: object) -> Optional[Decimal]:
 
 
 def money(value: Decimal) -> Decimal:
-    """Stored to 12 places; negatives and non-finite values store as 0 (UG-19)."""
+    """Stored to 12 places; negatives and non-finite values store as 0."""
     if not value.is_finite() or value <= 0:
         return ZERO.quantize(PLACES)
     return value.quantize(PLACES, rounding=ROUND_HALF_UP)
@@ -144,7 +144,7 @@ class Rates:
 
 @dataclass(frozen=True)
 class FallbackRates:
-    """The conservative rates of UG-20, used where a needed base rate is missing."""
+    """The conservative rates used where a needed base rate is missing."""
 
     input: Decimal = DEFAULT_FALLBACK_INPUT_PER_1M
     output: Decimal = DEFAULT_FALLBACK_OUTPUT_PER_1M
@@ -167,7 +167,7 @@ class FallbackRates:
 
 @dataclass(frozen=True)
 class Units:
-    """Measured quantities for unit pricing (UG-22). ``None`` is not measured."""
+    """Measured quantities for unit pricing. ``None`` is not measured."""
 
     images: Optional[int] = None
     # Width and height of each returned image, in pixels.
@@ -179,12 +179,12 @@ class Units:
 
 @dataclass(frozen=True)
 class PricedCall:
-    """One invocation's cost, with the evidence the ledger keeps (section 2, "Details")."""
+    """One invocation's cost, with the evidence the ledger keeps in its details."""
 
     cost_usd: Decimal
     source: str
     pricing_missing: bool
-    # The meters that lacked a price, named as in section 2.
+    # The meters that lacked a price, by their meter names.
     missing: tuple[str, ...] = ()
     breakdown: dict[str, Decimal] = field(default_factory=dict)
     snapshot: dict[str, Any] = field(default_factory=dict)
@@ -230,7 +230,7 @@ class _Meter:
 
 
 def _token_cost(usage: TokenUsage, rates: Rates, meter: _Meter) -> dict[str, Decimal]:
-    """The formula of UG-19, per million tokens, before rounding."""
+    """Each bucket's tokens times its rate per million tokens, before rounding."""
     fallback = meter.fallback
     input_rate = rates.input
     # A missing base rate is replaced by the conservative one for every bucket.
@@ -248,7 +248,7 @@ def _token_cost(usage: TokenUsage, rates: Rates, meter: _Meter) -> dict[str, Dec
     input_cost += meter.derived(image_in, "inputImageTokens", rates.input_image, effective_input)
     input_cost += meter.derived(audio_in, "inputAudioTokens", rates.input_audio, effective_input)
 
-    # An input rate of 0 with a blank cache rate: the cache part is 0, not flagged (MC-38).
+    # An input rate of 0 with a blank cache rate: the cache part is 0, not flagged.
     zero_input = input_rate is not None and input_rate == 0
     cached = (
         ZERO
@@ -299,7 +299,7 @@ def _token_cost(usage: TokenUsage, rates: Rates, meter: _Meter) -> dict[str, Dec
 def _unit_cost(
     rates: Rates, units: Optional[Units], usage: TokenUsage, token_priced: bool, meter: _Meter
 ) -> tuple[Decimal, dict[str, Any]]:
-    """Units of UG-22: requests are counted, everything else must be measured."""
+    """Unit pricing: requests are counted, everything else must be measured."""
     unit, price = rates.unit, rates.unit_price
     units = units or Units()
     if unit is None or price is None:
@@ -345,7 +345,7 @@ def price_call(
     units: Optional[Units] = None,
     service_tier: Optional[str] = None,
 ) -> PricedCall:
-    """A call the provider answered, with its usage (UG-18 to UG-22).
+    """A call the provider answered, with its usage.
 
     ``reported_cost`` is what the provider stated for this call, 0 included.
     ``rates`` are the model's own rates; Auto and unknown models pass ``None``.
@@ -355,7 +355,7 @@ def price_call(
     snapshot = rates.snapshot()
     reported = to_decimal(reported_cost)
     if reported is not None:
-        # The provider's total is complete: no cache or search fee goes on top (UG-21).
+        # The provider's total is complete: no cache or search fee goes on top.
         return PricedCall(
             cost_usd=money(reported),
             source=PROVIDER_REPORTED,
@@ -385,7 +385,7 @@ def price_call(
 
     cost = money(sum(breakdown.values(), ZERO))
     missing = tuple(meter.missing)
-    # Last-step-only figures are priced but never trusted as complete (UG-17).
+    # Last-step-only figures are priced but never trusted as complete.
     pricing_missing = bool(missing) or usage.incomplete
     if meter.used_fallback:
         source = FALLBACK_PRICING
@@ -417,7 +417,7 @@ def _all_free(rates: Rates, usage: TokenUsage) -> bool:
     return bool(needed) and all(rate is not None and rate == 0 for rate in needed)
 
 
-# How a call that did not finish normally ended (UG-23).
+# How a call that did not finish normally ended.
 NOT_CONTACTED = "not_contacted"
 REFUSED = "refused"
 CUT_OFF = "cut_off"
@@ -429,7 +429,7 @@ def estimate_tokens(
     last_prompt_size: Optional[int] = None,
     max_output: Optional[int] = None,
 ) -> tuple[int, int]:
-    """Input and output a cut-off call is charged for (limits.md LM-24)."""
+    """Input and output a cut-off call is charged for."""
     input_tokens = next(
         (n for n in (prompt_estimate, last_prompt_size) if isinstance(n, int) and n > 0),
         DEFAULT_ESTIMATE_INPUT_TOKENS,
@@ -447,7 +447,7 @@ def price_aborted(
     fallback: FallbackRates = FallbackRates(),
     estimate: Optional[tuple[int, int]] = None,
 ) -> PricedCall:
-    """A call cancelled or failed with no usage figures (UG-23).
+    """A call cancelled or failed with no usage figures.
 
     A call that did return usage is priced by ``price_call`` with its final
     status instead. ``estimate`` is the (input, output) of ``estimate_tokens``,
