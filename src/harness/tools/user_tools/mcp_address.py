@@ -13,6 +13,7 @@ from typing import Any, Optional
 from urllib.parse import urlparse
 
 import httpcore
+import httpx
 
 
 # IPv6 forms that carry an IPv4 address, which a network may route to that address.
@@ -60,6 +61,27 @@ async def check_server_address(url: str, *, allow_local: bool = False) -> None:
         raise ServerAddressRefused("host not found") from error
     if not found or not all(_is_public(info[4][0]) for info in found):
         raise ServerAddressRefused("host isn't public")
+
+
+class HttpsOnly(httpx.AsyncBaseTransport):
+    """Refuses a request that isn't https, before any connection is made.
+
+    The scheme half of ``check_server_address``, held by the client itself: a toolset
+    built for a server nobody checked still sends nothing over plain http, its headers
+    included. ``allow_local`` is the same development setting.
+    """
+
+    def __init__(self, inner: httpx.AsyncBaseTransport, *, allow_local: bool = False) -> None:
+        self._inner = inner
+        self._allow_local = allow_local
+
+    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+        if not self._allow_local and request.url.scheme != "https":
+            raise httpx.ConnectError("not an https address", request=request)
+        return await self._inner.handle_async_request(request)
+
+    async def aclose(self) -> None:
+        await self._inner.aclose()
 
 
 class PublicPeersOnly(httpcore.AsyncNetworkBackend):
