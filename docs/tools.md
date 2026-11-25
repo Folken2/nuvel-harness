@@ -25,11 +25,15 @@ from [plugins](plugins.md) to finish their job; each section names it.
 - **Only public servers.** `check_server_address` raises `ServerAddressRefused` unless the
   URL is `https` and every address its host resolves to is public (loopback, private,
   link-local, multicast, site-local and IPv6 forms that carry an IPv4 address are refused).
-  Independently, the HTTP client every toolset uses checks the peer of each new socket
-  and refuses one that isn't public, follows no redirects and ignores proxies from the
-  environment. `allow_local_servers=True` turns both checks off, for development.
-  `toolset_for` doesn't call `check_server_address` itself: call it before you mount a
-  person's server.
+  Independently, the HTTP client every toolset built by `toolset_for` uses refuses any
+  request that isn't https before it connects, so a server's headers never go out over
+  plain http. It also checks the peer of each new socket and refuses one that isn't
+  public, follows no redirects and ignores proxies from the environment.
+  `allow_local_servers=True` turns all of these off, for development. Calling
+  `check_server_address` before you mount a person's server is still worth it: it
+  refuses a bad address up front with `ServerAddressRefused`, where the client's refusal
+  shows up as the server being unavailable when its tools are listed. A mount whose
+  `MountRules(own_host_check=True)` keeps its own client and its own host check.
 - **A bad tool name costs only that tool.** A tool whose name, once prefixed
   `mcp_<slug>__`, falls outside `[a-zA-Z0-9_-]{1,64}` is left out and logged, and the
   server is reported as skipped, rather than the whole model request being refused

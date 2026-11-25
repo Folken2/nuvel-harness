@@ -325,8 +325,21 @@ Run it from `myproduct/`:
 ```
 
 ```text
-1 passed
+.                                                                        [100%]
+=============================== warnings summary ===============================
+test_helper.py::test_a_run_counts_words_and_finishes
+  .../fastapi/routing.py:381: DeprecationWarning: Please use create_session instead. This will be removed in future releases.
+    return await dependant.call(**values)
+
+1 passed, 1 warning
 ```
+
+The warning is expected. It comes from ADK, which marks the route that creates a session under
+an id you choose (`POST /apps/{app}/users/{user}/sessions/{id}`) as deprecated. The test and
+the `curl` calls in step 4 use that route to name the session `s1`. If `pytest-asyncio` is installed too (the
+harness's own test extra includes it), it adds a second warning that
+`asyncio_default_fixture_loop_scope` is unset. Set that option in your pytest configuration
+to silence it.
 
 How the test works:
 

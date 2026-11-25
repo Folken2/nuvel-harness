@@ -17,8 +17,9 @@ attaches it with `ApprovalPlugin` from `harness.plugins`.
   error. A call ADK brings back after an answer is never classified again, so the person is
   never asked twice for one call.
 - **Layered decisions** (`Policy`). The agent's own read-only tools, and tools their app marks
-  read only, never ask. Actions that send, delete or pay always ask. Everything else goes to a
-  classifier in mode `smart`, or asks in mode `strict`. Mode `off` never asks.
+  read only, never ask. Actions that send, delete or pay always ask, unless the person allowed
+  that action. Everything else goes to a classifier in mode `smart`, or asks in mode `strict`.
+  Mode `off` never asks.
 - **A classifier that fails or times out counts as risky**: the call asks.
 - **"Always allow"** (`ApprovalSettings.allowed`) skips the question for a call whose actions
   the person has all allowed.
