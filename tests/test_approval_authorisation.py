@@ -6,6 +6,8 @@ answers each question by its name.
 
 import asyncio
 import json
+
+import pytest
 from collections.abc import AsyncGenerator, Mapping
 
 from google.adk.agents import LlmAgent
@@ -37,7 +39,7 @@ from harness.approval import (
 )
 from harness.approval.authorisation import MESSAGE_LIMIT, MESSAGES_LIMIT
 from harness.approval.breaker import denials_in_a_row
-from harness.approval.policy import SENDS_REASON, UNCHECKED_REASON
+from harness.approval.policy import CHANGES_REASON, SENDS_REASON, UNCHECKED_REASON
 from harness.approval.provenance import MOVED_FILE
 from harness.plugins.approval import ApprovalPlugin
 from harness.runs.own_messages import own_message
@@ -198,6 +200,31 @@ def test_after_outside_content_a_safe_call_the_person_didnt_ask_for_asks():
         events, ran, _ = await _run(script, {"effects": 0.1, "authorised": None}, "Read the page")
         payload = _card(events)
         assert ran == ["fetch_page"] and payload is not None and payload["reason"] == UNCHECKED_REASON
+
+    asyncio.run(scenario())
+
+
+@pytest.mark.parametrize("outside", [True, False], ids=["after outside content", "nothing read"])
+@pytest.mark.parametrize(
+    "answers, reason",
+    [
+        ({"effects": 0.9, "authorised": 0.99}, CHANGES_REASON),
+        ({"effects": None, "authorised": 0.99}, UNCHECKED_REASON),
+        ({"effects": None, "authorised": None}, UNCHECKED_REASON),
+    ],
+    ids=["risky", "risk check failed", "both checks failed"],
+)
+def test_a_call_the_risk_check_holds_still_asks_however_plainly_the_person_asked(outside, answers, reason):
+    # The second answer only ever adds a card: a high one never lets through a call the
+    # first holds, or one it couldn't rate.
+    async def scenario():
+        script = [("fetch_page", {}), ("update_record", {"id": 1})] if outside else [("update_record", {"id": 1})]
+        events, ran, _ = await _run(script, answers, "Update record 1 now, I'm asking you to")
+        payload = _card(events)
+        assert "update_record" not in ran and payload is not None
+        assert payload["reason"] == reason
+        assert payload["authorised"] == answers["authorised"]
+        assert payload["asked_for"] is (None if answers["authorised"] is None else True)
 
     asyncio.run(scenario())
 
