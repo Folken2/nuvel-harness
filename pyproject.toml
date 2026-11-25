@@ -23,7 +23,7 @@ classifiers = [
 # installs this package with --no-deps, then runs `pip check` against these ranges.
 dependencies = [
     "google-adk[db]>=2.14,<3",
-    "google-genai>=2.33,<3",
+    "google-genai>=2.33,<4",
     # Never 1.82.7, 1.82.8 or 1.107.0: compromised releases. The floor is above them.
     "litellm>=1.108.3,<2",
     "mcp>=1.27,<2",
