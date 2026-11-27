@@ -107,6 +107,7 @@ class ServiceOptions:
     max_llm_calls: Optional[int] = None
     lifespan: Optional[Callable[..., Any]] = None   # runs beside the service
     safe_to_repeat: Collection[str] = ()   # read-only tools a resume asks the model to call again
+    max_live_runs: Optional[int] = None    # runs people started, live at once; past it 503 "busy"
 
 @dataclass(frozen=True)
 class Stores:

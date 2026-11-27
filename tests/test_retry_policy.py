@@ -119,7 +119,7 @@ GEMINI_PER_DAY = _GEMINI_429 % "GenerateRequestsPerDayPerProjectPerModel-FreeTie
             Kind.OVERFLOW,
         ),
         (_error(litellm.BadRequestError, "invalid tool schema"), Kind.OTHER),
-        (_error(litellm.Timeout, "timed out", cause=httpx.ReadTimeout("x")), Kind.OTHER),
+        (_error(litellm.Timeout, "timed out", cause=httpx.ReadTimeout("x")), Kind.TIMED_OUT),
         # A lazy stream's refusal: what it wraps decides.
         (MidStreamFallbackError("x", "m", "gemini", original_exception=_error(litellm.AuthenticationError)), Kind.REFUSED),
         (MidStreamFallbackError("x", "m", "gemini", original_exception=_error(litellm.RateLimitError, GEMINI_PER_MINUTE)), Kind.RATE_LIMITED),

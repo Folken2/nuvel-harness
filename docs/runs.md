@@ -18,6 +18,12 @@ adds the run routes below to ADK's API server and returns the `RunRegistry` they
 - **One run per session.** `RunRegistry.reserve` refuses a session whose run is still
   reserved or running, and the route answers `409 {"error": "run_active"}`. Two runs at
   once would interleave one history.
+- **A cap on live runs.** With `max_live_runs` (`ServiceOptions`, or
+  `RunRegistry(max_live_runs=n)`), a reserve past that many live runs, reserved or
+  running, answers `503 {"error": "busy"}` with `Retry-After: 10`. It counts the runs
+  people started: background tasks neither count nor are refused (their parent was
+  admitted, and `max_running` bounds them). A run back after a restart counts but is never
+  refused. A session that already has a run still gets the 409 above, not the 503.
 - **A run belongs to the service, not the connection.** The run is driven in-process
   against ADK's own `/run_sse`, so request parsing, the session check and event formatting
   stay ADK's. A viewer leaving changes nothing. Only a Stop disconnects it, through the
@@ -110,8 +116,8 @@ adds the run routes below to ADK's API server and returns the `RunRegistry` they
 
 ## Configure it
 
-`RunRegistry()` takes no settings: `create_service` makes one and returns it as
-`service.runs`. Background tasks are off unless the product passes a board:
+`RunRegistry(max_live_runs=None)`: `create_service` makes one, with
+`ServiceOptions.max_live_runs`, and returns it as `service.runs`. Background tasks are off unless the product passes a board:
 
 ```python
 TaskBoard(registry, max_running, max_per_run=None, *, settings=None)

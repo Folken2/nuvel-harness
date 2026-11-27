@@ -138,6 +138,9 @@ class ServiceOptions:
     # The tools that only read: after a restart the model is asked to call one again,
     # where any other interrupted call is answered as unknown (runs/resume.py).
     safe_to_repeat: Collection[str] = ()
+    # The runs people started that may be live at once; past it a new run is refused
+    # with 503 "busy" (runs/registry.py). None: no cap.
+    max_live_runs: Optional[int] = None
 
 
 @dataclass(frozen=True)
@@ -184,7 +187,7 @@ def create_service(
     async def health():  # no return type: FastAPI would make it a response model
         return {"status": "ok"}
 
-    runs = RunRegistry()
+    runs = RunRegistry(max_live_runs=options.max_live_runs)
     add_run_routes(app, runs, stores.run_sessions(), tasks(runs), options.safe_to_repeat)
     return Service(app, runs)
 

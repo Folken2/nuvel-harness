@@ -57,6 +57,11 @@ class ClientSettings:
     # A request too long for its model is sent again with the tool results of all but
     # this many latest steps masked.
     overflow_kept_steps: int
+    # How long a request may go without a byte from the model's API, in seconds, before
+    # it fails as timed out: before the answer starts, and between a stream's chunks, so
+    # a stalled stream ends the call instead of holding the run. A long answer that keeps
+    # streaming is never cut. 0: no limit of ours, LiteLLM's own default applies.
+    request_timeout_seconds: float = 0
 
 
 # (model, the call's arguments) -> the arguments to send.
@@ -108,6 +113,9 @@ class KeyedLiteLLMClient(MeteredLiteLLMClient):
         Every request below is one ledger attempt (``MeteredLiteLLMClient``), so a
         retry or a fallback is the same call's next attempt.
         """
+        settings = self._settings()
+        if settings.request_timeout_seconds > 0 and "timeout" not in kwargs:
+            kwargs = {**kwargs, "timeout": settings.request_timeout_seconds}
         route = current_route()
         targets = [(model, kwargs if route is None else {**kwargs, "api_key": route.api_key})]
         if route is not None and route.fallback_model is not None:
@@ -115,7 +123,6 @@ class KeyedLiteLLMClient(MeteredLiteLLMClient):
             if route.fallback_key:
                 fallback["api_key"] = route.fallback_key
             targets.append((route.fallback_model, fallback))
-        settings = self._settings()
         call_wait_left = settings.retry_budget_seconds
         window = current_window()
         shrunk = False

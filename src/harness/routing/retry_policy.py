@@ -13,7 +13,9 @@ the server's delay and walking an error's causes are adapted from OpenHands
 - a quota or a bill (out of credit, a day's allowance spent) is never sent again on
   the same route, since waiting doesn't lift it; another account may, so it falls back;
 - a refused key or an unknown model id falls back, as before;
-- a request too long for the model is shrunk once (``context/overflow.py``).
+- a request too long for the model is shrunk once (``context/overflow.py``);
+- a request that hit the client's own time limit isn't sent again on the same route,
+  which would wait the whole limit twice, but falls back, where there is a fallback.
 
 Each request the client sends is one ledger attempt, so a retry is never billed twice
 nor lost. The client only retries a request that raised, never a stream it already
@@ -46,6 +48,7 @@ class Kind(enum.Enum):
     REFUSED = "refused"
     RATE_LIMITED = "rate_limited"
     TRANSIENT = "transient"
+    TIMED_OUT = "timed_out"
     OTHER = "other"
 
 
@@ -62,6 +65,7 @@ RULES: dict[Kind, Rule] = {
     Kind.REFUSED: Rule(fall_back=True),
     Kind.RATE_LIMITED: Rule(retry=True, fall_back=True),
     Kind.TRANSIENT: Rule(retry=True, fall_back=True),
+    Kind.TIMED_OUT: Rule(fall_back=True),
     Kind.OTHER: Rule(),
 }
 
@@ -173,9 +177,9 @@ def classify(error: BaseException) -> Kind:
         return classify(error.original_exception)
     text, status = str(error), _status(error)
     # LiteLLM's label for a timeout of ours and for a server's 408 alike: ours already
-    # waited the whole limit, and another would double it.
+    # waited the whole limit, and another on the same route would double it.
     if isinstance(error, litellm.Timeout):
-        return Kind.TRANSIENT if _the_server_answered(error) else Kind.OTHER
+        return Kind.TRANSIENT if _the_server_answered(error) else Kind.TIMED_OUT
     # Also LiteLLM's label for an error it couldn't map, a bug that a retry repeats.
     if isinstance(error, litellm.APIConnectionError):
         return Kind.TRANSIENT if _the_connection_failed(error) else Kind.OTHER

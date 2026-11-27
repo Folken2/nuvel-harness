@@ -14,7 +14,7 @@ from google.adk.sessions import BaseSessionService
 from .. import wire_names
 from .driver import RunStart, drive_run
 from .regenerate import RewindFailed, message_to_retry, rewind_for_regenerate
-from .registry import Run, RunActive, RunKey, RunNotReserved, RunRegistry, RunStatus
+from .registry import Run, RunActive, RunKey, RunNotReserved, RunRegistry, RunsFull, RunStatus
 from .resume import AlreadyEnded, NotResumed, past_frames, read_history, restore_to_resume
 from .run_scope import RunScope, reset_run_scope, set_run_scope
 from .steering import Steer
@@ -25,6 +25,8 @@ BASE = "/runs/apps/{app_name}/users/{user_id}/sessions/{session_id}"
 STEER_MAX_CHARS = 32_000
 # Only the caller's identity goes through: drive_run sets the rest of the request.
 FORWARDED_HEADERS = frozenset({b"authorization"})
+# How long a caller refused for a full service is asked to wait before trying again.
+BUSY_RETRY_AFTER_SECONDS = 10
 
 # The tasks need a strong reference, or they can be collected mid-run.
 _driving: set[asyncio.Task[None]] = set()
@@ -90,6 +92,12 @@ def add_run_routes(
             run = registry.reserve((app_name, user_id, session_id))
         except RunActive:
             return JSONResponse({"error": "run_active"}, status_code=409)
+        except RunsFull:
+            return JSONResponse(
+                {"error": "busy"},
+                status_code=503,
+                headers={"Retry-After": str(BUSY_RETRY_AFTER_SECONDS)},
+            )
         return JSONResponse(_describe(run), status_code=201)
 
     @app.post(f"{BASE}/start")

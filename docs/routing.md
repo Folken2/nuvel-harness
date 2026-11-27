@@ -38,7 +38,8 @@ How this sits beside ADK's own retry plugins is in [adk](adk.md).
   | quota | 402, "insufficient credits", a per-day quota | fall back; never sent again on the same route |
   | refused | an authentication or permission error, an unknown model | fall back |
   | overflow | the request is too long for the model | shrink once and send again |
-  | other | anything else, including a timeout the client itself hit | give up |
+  | timed out | the client's own time limit (`request_timeout_seconds`) passed with no byte from the API | fall back; never sent again on the same route, which would wait the limit twice |
+  | other | anything else | give up |
 
 - **A 429 is never overflow.** The status is checked before the wording, so a 429 that says
   "too many tokens" is a rate limit.
@@ -76,13 +77,14 @@ How this sits beside ADK's own retry plugins is in [adk](adk.md).
 
 ## Configure it
 
-`ClientSettings` (no defaults):
+`ClientSettings` (only `request_timeout_seconds` has a default):
 
 | Field | Meaning |
 | --- | --- |
 | `retry` | `retry_policy.Settings(retries, first_wait, max_wait)`: retries per target, the first wait in seconds, the longest single wait. |
 | `retry_budget_seconds` | The most one call may spend waiting between its retries, across targets. |
 | `overflow_kept_steps` | How many newest steps keep their tool results whole when a too-long request is shrunk. |
+| `request_timeout_seconds` | How long a request may go without a byte from the API, before the answer starts and between a stream's chunks, before it fails as timed out. A stalled stream then ends the call instead of holding the run; a long answer that keeps streaming is never cut. A call that sets its own `timeout` keeps it. Default 0: none of ours, LiteLLM's applies. |
 
 `TurnRoute(api_key, fallback_model=None, fallback_key=None)`.
 
