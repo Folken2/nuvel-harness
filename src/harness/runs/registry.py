@@ -55,6 +55,10 @@ class RunActive(Exception):
     """The session already has a run: two at once would interleave its history."""
 
 
+class RunsFull(Exception):
+    """As many runs are live as the service admits: a new one waits for one to end."""
+
+
 class RunNotReserved(Exception):
     """Nothing is waiting to start under that id: stopped, or gone."""
 
@@ -125,11 +129,29 @@ def _of_session(key_session: str, session: str | None) -> bool:
     return session is None or key_session == session or key_session.startswith(f"{session}{TASK_SESSION_MARK}")
 
 
-class RunRegistry:
-    """One run per session. See the module docstring for why this can be a dict."""
+def _is_task(key: RunKey) -> bool:
+    return TASK_SESSION_MARK in key[2]
 
-    def __init__(self) -> None:
+
+class RunRegistry:
+    """One run per session. See the module docstring for why this can be a dict.
+
+    ``max_live_runs`` caps the runs a person started that are live at once (reserved or
+    running), so a burst can't take the service past what it was sized for: a reserve
+    past it raises RunsFull. Background tasks don't count and aren't refused, since
+    their parent was admitted and the task board limits them (./tasks.py). A run back
+    after a restart counts but is never refused: it was admitted before. None: no cap.
+    """
+
+    def __init__(self, max_live_runs: int | None = None) -> None:
+        if max_live_runs is not None and max_live_runs < 1:
+            raise ValueError(f"max_live_runs must be at least 1, got {max_live_runs}")
         self._runs: dict[RunKey, Run] = {}
+        self._max_live_runs = max_live_runs
+
+    def live_runs(self) -> int:
+        """The runs counted against ``max_live_runs``: live, and not a background task."""
+        return sum(1 for key, run in self._runs.items() if run.status.active and not _is_task(key))
 
     def reserve(self, key: RunKey) -> Run:
         """Claims the session before the web app's own steps, so a Stop has a target."""
@@ -137,6 +159,12 @@ class RunRegistry:
         existing = self._runs.get(key)
         if existing and existing.status.active:
             raise RunActive()
+        if (
+            self._max_live_runs is not None
+            and not _is_task(key)
+            and self.live_runs() >= self._max_live_runs
+        ):
+            raise RunsFull()
         run = Run(id=str(uuid.uuid4()))
         self._runs[key] = run
         return run
