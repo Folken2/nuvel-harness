@@ -46,7 +46,9 @@ def is_local_db(uri: str) -> bool:
     return parts.hostname in (None, "", "localhost", "127.0.0.1") or socket_host.startswith("/")
 
 
-def session_db_kwargs(uri: str, connect_args: dict[str, Any]) -> dict[str, Any]:
+def session_db_kwargs(
+    uri: str, connect_args: dict[str, Any], max_connections: Optional[int] = None
+) -> dict[str, Any]:
     """SQLAlchemy engine options for the session database.
 
     pool_pre_ping checks a pooled connection before reusing it and
@@ -54,8 +56,19 @@ def session_db_kwargs(uri: str, connect_args: dict[str, Any]) -> dict[str, Any]:
     database restart or proxy timeout doesn't fail the user's next turn.
     ``connect_args`` are the service's own, its time limits among them; a database
     that isn't on this machine is reached over TLS.
+
+    ``max_connections`` caps what one engine opens: that many stay pooled and none
+    open beyond them, so a full pool waits for a connection (SQLAlchemy's
+    ``pool_timeout``) instead of growing. None keeps SQLAlchemy's default of 5 plus
+    10 overflow. Every engine the harness builds over the session database gets it,
+    so their sum is a known share of the database's own connection limit.
     """
     kwargs: dict[str, Any] = {"pool_pre_ping": True, "pool_recycle": 300}
+    if max_connections is not None:
+        if max_connections < 1:
+            raise ValueError(f"max_connections must be at least 1, got {max_connections}")
+        kwargs["pool_size"] = max_connections
+        kwargs["max_overflow"] = 0
     connect_args = dict(connect_args)
     if not is_local_db(uri):
         connect_args["ssl"] = "require"
@@ -76,10 +89,15 @@ class Stores:
     # The session engine's connect_args for a URI: the service's time limits.
     connect_args: Callable[[str], dict[str, Any]]
     artifact_uri: Optional[str] = None
+    # Per engine: ADK's sessions, the resume reader and the eraser each open up to this
+    # many. None: SQLAlchemy's default pool (see session_db_kwargs).
+    max_connections: Optional[int] = None
 
     def db_kwargs(self) -> dict[str, Any]:
         assert self.session_uri is not None
-        return session_db_kwargs(self.session_uri, self.connect_args(self.session_uri))
+        return session_db_kwargs(
+            self.session_uri, self.connect_args(self.session_uri), self.max_connections
+        )
 
     def run_sessions(self) -> BaseSessionService:
         """The store a resume reads: the same database ADK was given."""

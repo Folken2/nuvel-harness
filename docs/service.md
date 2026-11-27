@@ -31,7 +31,10 @@ settings and passes them in.
   (`pool_pre_ping=True`) and replaces it after 300 seconds (`pool_recycle=300`), so a
   connection a database restart or a proxy dropped does not fail the next turn. A database
   that is not on this machine (not `localhost`, `127.0.0.1` or a socket path) is reached
-  with `ssl="require"`.
+  with `ssl="require"`. With `max_connections` (from `Stores.max_connections`) one engine
+  pools that many connections and opens none beyond them (`pool_size=n`,
+  `max_overflow=0`); a checkout past them waits SQLAlchemy's `pool_timeout`. Left out,
+  SQLAlchemy's default pool applies: 5, plus 10 overflow.
 
 ### `erasure`
 
@@ -82,7 +85,9 @@ settings and passes them in.
 
 - **Database connections.** With a session URI there can be three engines: ADK's own,
   the one `Stores.run_sessions()` builds for resume reads, and the one `Stores.eraser()`
-  builds (it connects on first use). Each pooled checkout costs one ping
+  builds (it connects on first use). So at most three times `Stores.max_connections` (45
+  with SQLAlchemy's defaults); add the product's own engines when checking the total
+  against the database's connection limit. Each pooled checkout costs one ping
   (`pool_pre_ping`).
 - **Erasure:** in the artifact store, one listing and one delete per file. In the database,
   one transaction of two `DELETE` statements for a conversation, three for a person, plus
@@ -108,6 +113,7 @@ class Stores:
     session_uri: Optional[str]   # None: sessions in memory
     connect_args: Callable[[str], dict[str, Any]]   # the engine's connect_args for a URI
     artifact_uri: Optional[str] = None
+    max_connections: Optional[int] = None   # per engine; None: SQLAlchemy's default pool
 
 @dataclass(frozen=True)
 class ServerLimits:
